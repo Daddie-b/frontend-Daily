@@ -11,7 +11,7 @@ const DailySummary = () => {
   // Fetch daily summary for the specified date.
   const fetchSummary = useCallback(async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/production/summary/daily?date=${date}`);
+      const res = await axios.get(`https://dailybackend-nst1.onrender.com/api/production/summary/daily?date=${date}`);
       setSummary(res.data);
     } catch (error) {
       console.error('Error fetching daily summary:', error);
@@ -22,7 +22,7 @@ const DailySummary = () => {
   const fetchCumulativeUsage = useCallback(async () => {
     try {
       // Assuming the endpoint returns cumulative usage under "rawMaterialUsage"
-      const res = await axios.get(`http://localhost:5000/api/production/summary/range?startDate=2000-01-01&endDate=${date}`);
+      const res = await axios.get(`https://dailybackend-nst1.onrender.com/api/production/summary/range?startDate=2000-01-01&endDate=${date}`);
       setCumulativeUsage(res.data.rawMaterialUsage);
     } catch (error) {
       console.error('Error fetching cumulative usage:', error);

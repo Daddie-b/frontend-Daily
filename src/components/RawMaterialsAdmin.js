@@ -49,7 +49,7 @@ const RawMaterialsAdmin = () => {
   // Fetch raw materials from the backend.
   const fetchMaterials = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/raw-materials');
+      const res = await axios.get('https://dailybackend-nst1.onrender.com/api/raw-materials');
       const data = Array.isArray(res.data) ? res.data : [];
       setMaterials(data);
     } catch (error) {
@@ -71,7 +71,7 @@ const RawMaterialsAdmin = () => {
   const confirmAddMaterial = async () => {
     const { name, price, inStock } = newMaterial;
     try {
-      await axios.post('http://localhost:5000/api/raw-materials', {
+      await axios.post('https://dailybackend-nst1.onrender.com/api/raw-materials', {
         name,
         price: parseFloat(price),
         inStock: parseInt(inStock, 10),

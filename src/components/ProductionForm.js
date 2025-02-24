@@ -31,7 +31,7 @@ const ProductionForm = () => {
   useEffect(() => {
     const fetchMaterials = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/raw-materials');
+        const res = await axios.get('https://dailybackend-nst1.onrender.com/api/raw-materials');
         setAvailableMaterials(res.data);
       } catch (error) {
         console.error('Error fetching raw materials:', error);
@@ -48,7 +48,7 @@ const ProductionForm = () => {
   // Submission functions
   const submitCakesProduction = async () => {
     try {
-      const res = await axios.post('http://localhost:5000/api/production/cakes', {
+      const res = await axios.post('https://dailybackend-nst1.onrender.com/api/production/cakes', {
         shift,
         production,
       });
@@ -60,7 +60,7 @@ const ProductionForm = () => {
 
   const submitRawMaterialsUsage = async () => {
     try {
-      const res = await axios.post('http://localhost:5000/api/production/materials', {
+      const res = await axios.post('https://dailybackend-nst1.onrender.com/api/production/materials', {
         shift,
         rawMaterialsUsed,
       });
