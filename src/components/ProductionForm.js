@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './ProductionForm.css';
+import '../App.css';
 
 const ProductionForm = () => {
   const [shift, setShift] = useState('Shift 1');

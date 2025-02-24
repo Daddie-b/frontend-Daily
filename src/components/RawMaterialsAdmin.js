@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './RawMaterialsAdmin.css'; // Import CSS for styling
+import '../App.css';
 
 // Helper: returns the latest price from the batch's prices array.
 const getLatestPrice = (batch) => {
@@ -160,16 +161,40 @@ const RawMaterialsAdmin = () => {
         </table>
       </div>
 
-      <h3>Overall Totals</h3>
-      <p>
-        <strong>Total Initial Cost: Ksh {overallInitialCost.toFixed(2)}</strong>
-      </p>
-      <p>
-        <strong>Total Current Cost: Ksh {overallCurrentCost.toFixed(2)}</strong>
-      </p>
-      <p>
-        <strong>Total Used Cost: Ksh {overallUsedCost.toFixed(2)}</strong>
-      </p>
+      <div className="overall-totals">
+  <div className="total-card">
+    <h4>Total Initial Cost</h4>
+    <p>
+      Ksh{' '}
+      {overallInitialCost.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}
+    </p>
+  </div>
+  <div className="total-card">
+    <h4>Total Current Cost</h4>
+    <p>
+      Ksh{' '}
+      {overallCurrentCost.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}
+    </p>
+  </div>
+  <div className="total-card">
+    <h4>Total Used Cost</h4>
+    <p>
+      Ksh{' '}
+      {overallUsedCost.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}
+    </p>
+  </div>
+</div>
+
+
     </div>
   );
 };
