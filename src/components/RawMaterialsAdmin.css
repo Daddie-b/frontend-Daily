@@ -1,0 +1,37 @@
+/* Container to allow horizontal scrolling on small screens */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 20px;
+  }
+  
+  /* Base table styling */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 320px;
+  }
+  
+  th, td {
+    padding: 12px 8px;
+    text-align: left;
+    border: 1px solid #ddd;
+  }
+  
+  th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+  }
+  
+  tr:hover {
+    background-color: #f9f9f9;
+  }
+  
+  /* Responsive adjustments for screens 320px and below */
+  @media screen and (max-width: 320px) {
+    th, td {
+      padding: 8px;
+      font-size: 12px;
+    }
+  }
+  

@@ -20,22 +20,41 @@ const ProductionForm = () => {
     fetchMaterials();
   }, []);
 
-  const handleSubmit = async (e) => {
+  // Create unique list of materials (only one record per material name)
+  const uniqueMaterials = Array.from(
+    new Map(availableMaterials.map(mat => [mat.name, mat])).values()
+  );
+
+  const handleSubmitCakes = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/production', {
+      const res = await axios.post('http://localhost:5000/api/production/cakes', {
         shift,
         production,
+      });
+      console.log('Cakes production logged:', res.data);
+    } catch (error) {
+      console.error('Error logging cakes production:', error);
+    }
+  };
+
+  const handleSubmitMaterials = async (e) => {
+    e.preventDefault();
+    try {
+      // When logging raw material usage, the backend will deduct from the first batch
+      // that still has currentStock. Your payload can just include the unique material id.
+      const res = await axios.post('http://localhost:5000/api/production/materials', {
+        shift,
         rawMaterialsUsed,
       });
-      console.log('Production logged:', res.data);
+      console.log('Raw materials usage logged:', res.data);
     } catch (error) {
-      console.error('Error logging production:', error);
+      console.error('Error logging raw materials usage:', error);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="production-form">
+    <form className="production-form">
       <h2>Shift Production Entry</h2>
       <div className="form-group">
         <label>Shift:</label>
@@ -60,6 +79,7 @@ const ProductionForm = () => {
           onChange={(e) => setProduction({ ...production, bread: parseInt(e.target.value) || 0 })}
         />
       </div>
+      <button type="button" onClick={handleSubmitCakes}>Submit Cakes Production</button>
       <div className="form-group">
         <h3>Raw Materials Used</h3>
         {rawMaterialsUsed.map((item, index) => (
@@ -73,7 +93,7 @@ const ProductionForm = () => {
               }}
             >
               <option value="">Select Material</option>
-              {availableMaterials.map((material) => (
+              {uniqueMaterials.map((material) => (
                 <option key={material._id} value={material._id}>
                   {material.name}
                 </option>
@@ -92,7 +112,7 @@ const ProductionForm = () => {
           </div>
         ))}
       </div>
-      <button type="submit">Submit Production</button>
+      <button type="button" onClick={handleSubmitMaterials}>Submit Raw Materials Usage</button>
     </form>
   );
 };
