@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './RawMaterialsAdmin.css'; // Import CSS for styling
+import './RawMaterialsAdmin.css';
 import '../App.css';
 
 // Helper: returns the latest price from the batch's prices array.
@@ -12,6 +12,31 @@ const getLatestPrice = (batch) => {
   return batch.price || 0;
 };
 
+// Popup component for confirmation.
+const ConfirmationPopup = ({ material, onConfirm, onCancel }) => {
+  return (
+    <div className="popup-overlay">
+      <div className="popup-content">
+        <h3>Confirm Add Material</h3>
+        <p>Are you sure you want to add the following material?</p>
+        <p>
+          <strong>Name:</strong> {material.name}
+        </p>
+        <p>
+          <strong>Price:</strong> {material.price}
+        </p>
+        <p>
+          <strong>In Stock:</strong> {material.inStock}
+        </p>
+        <div className="popup-buttons">
+          <button onClick={onConfirm}>Confirm</button>
+          <button onClick={onCancel}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const RawMaterialsAdmin = () => {
   const [materials, setMaterials] = useState([]);
   const [newMaterial, setNewMaterial] = useState({
@@ -19,6 +44,7 @@ const RawMaterialsAdmin = () => {
     price: '',
     inStock: '',
   });
+  const [showPopup, setShowPopup] = useState(false);
 
   // Fetch raw materials from the backend.
   const fetchMaterials = async () => {
@@ -35,22 +61,33 @@ const RawMaterialsAdmin = () => {
     fetchMaterials();
   }, []);
 
-  // Add a new raw material batch (initial stock remains constant).
-  const handleAddMaterial = async (e) => {
+  // When the form is submitted, show the confirmation popup.
+  const handleAddMaterial = (e) => {
     e.preventDefault();
+    setShowPopup(true);
+  };
+
+  // Confirm addition: send the POST request, refresh list, then close popup.
+  const confirmAddMaterial = async () => {
     const { name, price, inStock } = newMaterial;
     try {
       await axios.post('http://localhost:5000/api/raw-materials', {
         name,
         price: parseFloat(price),
-        inStock: parseInt(inStock),
+        inStock: parseInt(inStock, 10),
       });
-      // Refresh the list after adding.
       fetchMaterials();
       setNewMaterial({ name: '', price: '', inStock: '' });
     } catch (error) {
       console.error('Error adding raw material:', error);
+    } finally {
+      setShowPopup(false);
     }
+  };
+
+  // Cancel addition: simply close the popup.
+  const cancelAddMaterial = () => {
+    setShowPopup(false);
   };
 
   // Group batches by material name.
@@ -92,11 +129,11 @@ const RawMaterialsAdmin = () => {
   const overallUsedCost = overallInitialCost - overallCurrentCost;
 
   return (
-    <div>
+    <div className="raw-materials-admin">
       <h2>Raw Materials Management</h2>
 
-      {/* Add Material Form (for initial stock entries – remains constant) */}
-      <form onSubmit={handleAddMaterial}>
+      {/* Add Material Form */}
+      <form onSubmit={handleAddMaterial} className="add-material-form">
         <input
           type="text"
           placeholder="Material Name"
@@ -140,18 +177,19 @@ const RawMaterialsAdmin = () => {
               const aggregates = groupAggregates[materialName];
               return batches.map((batch, idx) => (
                 <tr key={`${materialName}-${idx}`}>
-                  {/* Display material name only on the first row */}
                   <td>{idx === 0 ? materialName : ''}</td>
                   <td>{getLatestPrice(batch)}</td>
                   <td>{batch.initialStock}</td>
                   <td>{batch.currentStock}</td>
                   <td>Ksh {(getLatestPrice(batch) * batch.initialStock).toFixed(2)}</td>
                   <td>Ksh {(getLatestPrice(batch) * batch.currentStock).toFixed(2)}</td>
-                  {/* On the last row of the group, display aggregated totals */}
                   <td>
                     {idx === batches.length - 1
-                      ? `Initial: ${aggregates.totalInitialStock} (Cost: Ksh ${aggregates.aggregatedInitialCost.toFixed(2)}), 
-                         Current: ${aggregates.totalCurrentStock} (Cost: Ksh ${aggregates.aggregatedCurrentCost.toFixed(2)})`
+                      ? `Initial: ${aggregates.totalInitialStock} (Cost: Ksh ${aggregates.aggregatedInitialCost.toFixed(
+                          2
+                        )}), Current: ${aggregates.totalCurrentStock} (Cost: Ksh ${aggregates.aggregatedCurrentCost.toFixed(
+                          2
+                        )})`
                       : ''}
                   </td>
                 </tr>
@@ -162,39 +200,46 @@ const RawMaterialsAdmin = () => {
       </div>
 
       <div className="overall-totals">
-  <div className="total-card">
-    <h4>Total Initial Cost</h4>
-    <p>
-      Ksh{' '}
-      {overallInitialCost.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}
-    </p>
-  </div>
-  <div className="total-card">
-    <h4>Total Current Cost</h4>
-    <p>
-      Ksh{' '}
-      {overallCurrentCost.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}
-    </p>
-  </div>
-  <div className="total-card">
-    <h4>Total Used Cost</h4>
-    <p>
-      Ksh{' '}
-      {overallUsedCost.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}
-    </p>
-  </div>
-</div>
+        <div className="total-card">
+          <h4>Total Initial Cost</h4>
+          <p>
+            Ksh{' '}
+            {overallInitialCost.toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </p>
+        </div>
+        <div className="total-card">
+          <h4>Total Current Cost</h4>
+          <p>
+            Ksh{' '}
+            {overallCurrentCost.toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </p>
+        </div>
+        <div className="total-card">
+          <h4>Total Used Cost</h4>
+          <p>
+            Ksh{' '}
+            {overallUsedCost.toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </p>
+        </div>
+      </div>
 
-
+      {/* Popup for confirmation */}
+      {showPopup && (
+        <ConfirmationPopup
+          material={newMaterial}
+          onConfirm={confirmAddMaterial}
+          onCancel={cancelAddMaterial}
+        />
+      )}
     </div>
   );
 };
