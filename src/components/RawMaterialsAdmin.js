@@ -38,7 +38,7 @@ const DownloadButton = () => {
   const handleDownload = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/raw-materials/download-pdf', null, {
+      const response = await axios.post('https://dailybackend-nst1.onrender.com/api/raw-materials/download-pdf', null, {
         responseType: 'blob'
       });
 
@@ -76,7 +76,7 @@ const ArchiveButton = ({ onArchiveSuccess }) => {
     setIsLoading(true);
     const archiveDate = new Date();
     try {
-      const response = await axios.post('http://localhost:5000/api/raw-materials/archive-batches', {
+      const response = await axios.post('https://dailybackend-nst1.onrender.com/api/raw-materials/archive-batches', {
         archiveDate: archiveDate.toISOString()
       });
       alert(response.data.message);
