@@ -39,7 +39,7 @@ const BatchActions = ({ onArchiveSuccess }) => {
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
-      const response = await axios.post('https://dailybackend-nst1.onrender.com/api/raw-materials/download-pdf', null, {
+      const response = await axios.post('http://localhost:5000/api/raw-materials/download-pdf', null, {
         responseType: 'blob'
       });
 
@@ -66,7 +66,7 @@ const BatchActions = ({ onArchiveSuccess }) => {
     setIsArchiving(true);
     const archiveDate = new Date();
     try {
-      const response = await axios.post('https://dailybackend-nst1.onrender.com/api/raw-materials/archive-batches', {
+      const response = await axios.post('http://localhost:5000/api/raw-materials/archive-batches', {
         archiveDate: archiveDate.toISOString()
       });
       alert(response.data.message);
@@ -101,7 +101,7 @@ const ViewArchivedBatches = () => {
   const fetchArchivedBatches = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get('https://dailybackend-nst1.onrender.com/api/raw-materials/batches');
+      const response = await axios.get('http://localhost:5000/api/raw-materials/batches');
       setArchivedBatches(response.data);
       setShowBatches(true);
     } catch (err) {
@@ -162,11 +162,26 @@ const RawMaterialsAdmin = () => {
     inStock: '',
   });
   const [showPopup, setShowPopup] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Add search functionality
+  const filteredMaterials = materials.filter(material => 
+    material.name.toLowerCase().startsWith(searchQuery.toLowerCase())
+  );
+
+  // Calculate search totals
+  const searchTotals = filteredMaterials.reduce((acc, material) => {
+    const price = getLatestPrice(material);
+    return {
+      count: acc.count + 1,
+      totalValue: acc.totalValue + (price * material.initialStock)
+    };
+  }, { count: 0, totalValue: 0 });
 
   // Fetch all raw materials from the backend (no filtering by default)
   const fetchMaterials = async () => {
     try {
-      const res = await axios.get('https://dailybackend-nst1.onrender.com/api/raw-materials');
+      const res = await axios.get('http://localhost:5000/api/raw-materials');
       const data = Array.isArray(res.data) ? res.data : [];
       setMaterials(data);
     } catch (error) {
@@ -188,7 +203,7 @@ const RawMaterialsAdmin = () => {
   const confirmAddMaterial = async () => {
     const { name, price, inStock } = newMaterial;
     try {
-      await axios.post('https://dailybackend-nst1.onrender.com/api/raw-materials', {
+      await axios.post('http://localhost:5000/api/raw-materials', {
         name,
         price: parseFloat(price),
         inStock: parseInt(inStock, 10),
@@ -212,7 +227,7 @@ const RawMaterialsAdmin = () => {
   // Handle archive success: filter out exhausted items after archiving
   const handleArchiveSuccess = async () => {
     try {
-      const res = await axios.get('https://dailybackend-nst1.onrender.com/api/raw-materials');
+      const res = await axios.get('http://localhost:5000/api/raw-materials');
       const data = Array.isArray(res.data) 
         ? res.data.filter(material => material.currentStock > 0) 
         : [];
@@ -264,6 +279,22 @@ const RawMaterialsAdmin = () => {
     <div className="raw-materials-admin">
       <h2>Raw Materials Management</h2>
 
+      {/* Search Input */}
+      <div className="search-container">
+        <input
+          type="text"
+          placeholder="Search materials (first 3 letters)..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value.slice(0, 3))}
+        />
+        {searchQuery && (
+          <div className="search-results-info">
+            <span>Materials found: {searchTotals.count}</span>
+            <span>Total value: Ksh {searchTotals.totalValue.toFixed(2)}</span>
+          </div>
+        )}
+      </div>
+
       {/* Add Material Form */}
       <form onSubmit={handleAddMaterial} className="add-material-form">
         <input
@@ -293,8 +324,8 @@ const RawMaterialsAdmin = () => {
       {/* Batch Actions Component */}
       <BatchActions onArchiveSuccess={handleArchiveSuccess} />
 
-      {/* Responsive Table for Displaying Current Raw Materials */}
-      <div className="table-container">
+     {/* Updated table using filteredMaterials */}
+     <div className="table-container">
         <table>
           <thead>
             <tr>
@@ -308,8 +339,26 @@ const RawMaterialsAdmin = () => {
             </tr>
           </thead>
           <tbody>
-            {Object.entries(groupedMaterials).map(([materialName, batches]) => {
-              const aggregates = groupAggregates[materialName];
+            {Object.entries(
+              filteredMaterials.reduce((groups, material) => {
+                const name = material.name;
+                if (!groups[name]) groups[name] = [];
+                groups[name].push(material);
+                return groups;
+              }, {})
+            ).map(([materialName, batches]) => {
+              const aggregates = batches.reduce((acc, batch) => ({
+                totalInitialStock: acc.totalInitialStock + batch.initialStock,
+                totalCurrentStock: acc.totalCurrentStock + batch.currentStock,
+                aggregatedInitialCost: acc.aggregatedInitialCost + (getLatestPrice(batch) * batch.initialStock),
+                aggregatedCurrentCost: acc.aggregatedCurrentCost + (getLatestPrice(batch) * batch.currentStock)
+              }), {
+                totalInitialStock: 0,
+                totalCurrentStock: 0,
+                aggregatedInitialCost: 0,
+                aggregatedCurrentCost: 0
+              });
+
               return batches.map((batch, idx) => (
                 <tr key={`${materialName}-${idx}`}>
                   <td>{idx === 0 ? materialName : ''}</td>
@@ -319,13 +368,9 @@ const RawMaterialsAdmin = () => {
                   <td>Ksh {(getLatestPrice(batch) * batch.initialStock).toFixed(2)}</td>
                   <td>Ksh {(getLatestPrice(batch) * batch.currentStock).toFixed(2)}</td>
                   <td>
-                    {idx === batches.length - 1
-                      ? `Initial: ${aggregates.totalInitialStock} (Cost: Ksh ${aggregates.aggregatedInitialCost.toFixed(
-                          2
-                        )}), Current: ${aggregates.totalCurrentStock} (Cost: Ksh ${aggregates.aggregatedCurrentCost.toFixed(
-                          2
-                        )})`
-                      : ''}
+                    {idx === batches.length - 1 &&
+                      `Initial: ${aggregates.totalInitialStock} (Ksh ${aggregates.aggregatedInitialCost.toFixed(2)})
+                      Current: ${aggregates.totalCurrentStock} (Ksh ${aggregates.aggregatedCurrentCost.toFixed(2)})`}
                   </td>
                 </tr>
               ));
@@ -333,7 +378,6 @@ const RawMaterialsAdmin = () => {
           </tbody>
         </table>
       </div>
-
       <div className="overall-totals">
         <div className="total-card">
           <h4>Total Initial Cost</h4>

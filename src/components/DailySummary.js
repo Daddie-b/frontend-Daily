@@ -3,44 +3,44 @@ import axios from 'axios';
 import './DailySummary.css';
 
 const DailySummary = () => {
-  // Set default date to today (YYYY-MM-DD)
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [summary, setSummary] = useState(null);
-  const [cumulativeUsage, setCumulativeUsage] = useState(null);
+  const [cumulativeData, setCumulativeData] = useState(null);
 
-  // Fetch daily summary for the specified date.
+  // Fetch daily summary
   const fetchSummary = useCallback(async () => {
     try {
-      const res = await axios.get(`https://dailybackend-nst1.onrender.com/api/production/summary/daily?date=${date}`);
+      const res = await axios.get(`http://localhost:5000/api/production/summary/daily?date=${date}`);
       setSummary(res.data);
     } catch (error) {
       console.error('Error fetching daily summary:', error);
     }
   }, [date]);
 
-  // Fetch cumulative raw material consumption from an early start date up to the selected date.
-  const fetchCumulativeUsage = useCallback(async () => {
+  // Fetch cumulative data
+  const fetchCumulativeData = useCallback(async () => {
     try {
-      // Assuming the endpoint returns cumulative usage under "rawMaterialUsage"
-      const res = await axios.get(`https://dailybackend-nst1.onrender.com/api/production/summary/range?startDate=2000-01-01&endDate=${date}`);
-      setCumulativeUsage(res.data.rawMaterialUsage);
+      const res = await axios.get(
+        `http://localhost:5000/api/production/summary/range?startDate=2000-01-01&endDate=${date}`
+      );
+      setCumulativeData(res.data);
     } catch (error) {
-      console.error('Error fetching cumulative usage:', error);
+      console.error('Error fetching cumulative data:', error);
     }
   }, [date]);
 
   useEffect(() => {
     fetchSummary();
-    fetchCumulativeUsage();
-  }, [date, fetchSummary, fetchCumulativeUsage]);
+    fetchCumulativeData();
+  }, [date, fetchSummary, fetchCumulativeData]);
 
-  // Calculate overall totals for cakes and bread from shift production.
-  let overallCakes = 0;
-  let overallBread = 0;
-  if (summary && summary.shifts) {
+  // Calculate daily totals
+  let dailyCakes = 0;
+  let dailyBread = 0;
+  if (summary?.shifts) {
     summary.shifts.forEach((shift) => {
-      overallCakes += shift.cakesSold || 0;
-      overallBread += shift.breadSold || 0;
+      dailyCakes += shift.cakesSold || 0;
+      dailyBread += shift.breadSold || 0;
     });
   }
 
@@ -65,40 +65,76 @@ const DailySummary = () => {
               <p>Bread Sold: {shift.breadSold}</p>
               <p>Flour Used: {shift.flourUsed} bags</p>
               <p className="wages"><strong>Worker Wages: Ksh {shift.workerWages}</strong></p>
-              <p className="last-updated">Last Updated: {new Date(shift.lastUpdated).toLocaleString()}</p>
+              <p className="last-updated">
+                Last Updated: {new Date(shift.lastUpdated).toLocaleString()}
+              </p>
             </div>
           ))}
+
+          {/* Daily Totals */}
           <div className="overall-production">
-            <h4>Overall Production Totals</h4>
-            <p>Total Cakes Sold: {overallCakes}</p>
-            <p>Total Bread Sold: {overallBread}</p>
+            <h4>Daily Production Totals</h4>
+            <p>Total Cakes Sold: {dailyCakes}</p>
+            <p>Total Bread Sold: {dailyBread}</p>
           </div>
 
-          {/* Raw Materials Used Today */}
-          <h3>Raw Materials Used (Today)</h3>
-          <ul className="raw-materials-today">
-            {summary.rawMaterials && Object.entries(summary.rawMaterials).map(([material, data]) => (
-              <li key={material}>
-                {material}: Used {data.used}
-              </li>
-            ))}
-          </ul>
-
-          {/* Cumulative Raw Materials Consumption */}
-          <h3>Cumulative Raw Materials Consumption (Up To {date})</h3>
-          {cumulativeUsage ? (
-            <ul className="cumulative-usage">
-              {Object.entries(cumulativeUsage).map(([material, data]) => (
-                <li key={material}>
-                  {material}: Total Used {data.quantity}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>Loading cumulative consumption...</p>
+          {/* Cumulative Totals */}
+          {cumulativeData && (
+            <div className="cumulative-production">
+              <h4>Cumulative Totals (Up To {date})</h4>
+              <p>Total Cakes: {cumulativeData.totalCakes}</p>
+              <p>Total Bread: {cumulativeData.totalBread}</p>
+            </div>
           )}
 
-          <p className="overall-last-updated">Last Updated: {new Date(summary.lastUpdated).toLocaleString()}</p>
+          {/* Raw Materials Used Today */}
+          <div className="raw-materials-section">
+            <h3>Raw Materials Used Today</h3>
+            <div className="materials-grid">
+              <div className="material-row material-header">
+                <span className="material-name">Material</span>
+                <span className="material-quantity">Quantity Used</span>
+              </div>
+              {summary.rawMaterials && Object.entries(summary.rawMaterials).map(([material, data]) => (
+                <div className="material-row" key={material}>
+                  <span className="material-name">{material}</span>
+                  <span className="material-quantity">{data.used}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Cumulative Raw Materials Consumption */}
+          <div className="cumulative-materials-section">
+            <h3>Cumulative Raw Materials Consumption</h3>
+            <div className="materials-grid cumulative-materials-grid">
+              {/* Header Row */}
+              <div className="material-row material-header cumulative-header">
+                <span className="material-name">Material</span>
+                <span className="material-quantity">Total Used</span>
+              </div>
+
+              {/* Data Rows */}
+              {cumulativeData?.rawMaterialUsage ? (
+                Object.entries(cumulativeData.rawMaterialUsage).map(([material, data]) => (
+                  <div className="material-row" key={material}>
+                    <span className="material-name">{material}</span>
+                    <span className="material-quantity">{data.quantity}</span>
+                  </div>
+                ))
+              ) : (
+                // Placeholder when data is still loading
+                <div className="material-row">
+                  <span className="material-name">Loading...</span>
+                  <span className="material-quantity">-</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <p className="overall-last-updated">
+            Last Updated: {new Date(summary.lastUpdated).toLocaleString()}
+          </p>
         </div>
       ) : (
         <p>Loading summary...</p>
