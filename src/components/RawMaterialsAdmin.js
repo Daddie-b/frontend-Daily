@@ -278,24 +278,7 @@ const RawMaterialsAdmin = () => {
   return (
     <div className="raw-materials-admin">
       <h2>Raw Materials Management</h2>
-
-      {/* Search Input */}
-      <div className="search-container">
-        <input
-          type="text"
-          placeholder="Search materials (first 3 letters)..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value.slice(0, 3))}
-        />
-        {searchQuery && (
-          <div className="search-results-info">
-            <span>Materials found: {searchTotals.count}</span>
-            <span>Total value: Ksh {searchTotals.totalValue.toFixed(2)}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Add Material Form */}
+  
       <form onSubmit={handleAddMaterial} className="add-material-form">
         <input
           type="text"
@@ -320,14 +303,30 @@ const RawMaterialsAdmin = () => {
         />
         <button type="submit">Add Material</button>
       </form>
-
-      {/* Batch Actions Component */}
+  
       <BatchActions onArchiveSuccess={handleArchiveSuccess} />
-
-     {/* Updated table using filteredMaterials */}
-     <div className="table-container">
+  
+      <div className="table-container">
         <table>
           <thead>
+            <tr>
+              <th colSpan="7">
+                <div className="search-container">
+                  <input
+                    type="text"
+                    placeholder="Search materials (first 3 letters)..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value.slice(0, 3))}
+                  />
+                  {searchQuery && (
+                    <div className="search-results-info">
+                      <span>Materials found: {searchTotals.count}</span>
+                      <span>Total value: Ksh {searchTotals.totalValue.toFixed(2)}</span>
+                    </div>
+                  )}
+                </div>
+              </th>
+            </tr>
             <tr>
               <th>Material Name</th>
               <th>Price</th>
@@ -335,7 +334,7 @@ const RawMaterialsAdmin = () => {
               <th>Current Stock</th>
               <th>Batch Total (Initial)</th>
               <th>Batch Total (Current)</th>
-              <th>Aggregated Totals</th>
+              <th className="aggregated-column">Aggregated Totals</th>
             </tr>
           </thead>
           <tbody>
@@ -358,7 +357,7 @@ const RawMaterialsAdmin = () => {
                 aggregatedInitialCost: 0,
                 aggregatedCurrentCost: 0
               });
-
+  
               return batches.map((batch, idx) => (
                 <tr key={`${materialName}-${idx}`}>
                   <td>{idx === 0 ? materialName : ''}</td>
@@ -367,7 +366,7 @@ const RawMaterialsAdmin = () => {
                   <td>{batch.currentStock}</td>
                   <td>Ksh {(getLatestPrice(batch) * batch.initialStock).toFixed(2)}</td>
                   <td>Ksh {(getLatestPrice(batch) * batch.currentStock).toFixed(2)}</td>
-                  <td>
+                  <td className="aggregated-column">
                     {idx === batches.length - 1 &&
                       `Initial: ${aggregates.totalInitialStock} (Ksh ${aggregates.aggregatedInitialCost.toFixed(2)})
                       Current: ${aggregates.totalCurrentStock} (Ksh ${aggregates.aggregatedCurrentCost.toFixed(2)})`}
@@ -378,12 +377,12 @@ const RawMaterialsAdmin = () => {
           </tbody>
         </table>
       </div>
+  
       <div className="overall-totals">
         <div className="total-card">
           <h4>Total Initial Cost</h4>
           <p>
-            Ksh{' '}
-            {overallInitialCost.toLocaleString('en-US', {
+            Ksh {overallInitialCost.toLocaleString('en-US', {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}
@@ -392,8 +391,7 @@ const RawMaterialsAdmin = () => {
         <div className="total-card">
           <h4>Total Current Cost</h4>
           <p>
-            Ksh{' '}
-            {overallCurrentCost.toLocaleString('en-US', {
+            Ksh {overallCurrentCost.toLocaleString('en-US', {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}
@@ -402,19 +400,16 @@ const RawMaterialsAdmin = () => {
         <div className="total-card">
           <h4>Total Used Cost</h4>
           <p>
-            Ksh{' '}
-            {overallUsedCost.toLocaleString('en-US', {
+            Ksh {overallUsedCost.toLocaleString('en-US', {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}
           </p>
         </div>
       </div>
-
-      {/* View Archived Batches Section */}
+  
       <ViewArchivedBatches />
-
-      {/* Popup for confirmation */}
+  
       {showPopup && (
         <ConfirmationPopup
           material={newMaterial}
