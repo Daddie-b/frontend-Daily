@@ -39,7 +39,7 @@ const BatchActions = ({ onArchiveSuccess }) => {
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/raw-materials/download-pdf', null, {
+      const response = await axios.post('https://dailyupdates-3l0b.onrender.com/api/raw-materials/download-pdf', null, {
         responseType: 'blob'
       });
 
@@ -66,7 +66,7 @@ const BatchActions = ({ onArchiveSuccess }) => {
     setIsArchiving(true);
     const archiveDate = new Date();
     try {
-      const response = await axios.post('http://localhost:5000/api/raw-materials/archive-batches', {
+      const response = await axios.post('https://dailyupdates-3l0b.onrender.com/api/raw-materials/archive-batches', {
         archiveDate: archiveDate.toISOString()
       });
       alert(response.data.message);
@@ -101,7 +101,7 @@ const ViewArchivedBatches = () => {
   const fetchArchivedBatches = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/raw-materials/batches');
+      const response = await axios.get('https://dailyupdates-3l0b.onrender.com/api/raw-materials/batches');
       setArchivedBatches(response.data);
       setShowBatches(true);
     } catch (err) {
@@ -181,7 +181,7 @@ const RawMaterialsAdmin = () => {
   // Fetch all raw materials from the backend (no filtering by default)
   const fetchMaterials = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/raw-materials');
+      const res = await axios.get('https://dailyupdates-3l0b.onrender.com/api/raw-materials');
       const data = Array.isArray(res.data) ? res.data : [];
       setMaterials(data);
     } catch (error) {
@@ -203,7 +203,7 @@ const RawMaterialsAdmin = () => {
   const confirmAddMaterial = async () => {
     const { name, price, inStock } = newMaterial;
     try {
-      await axios.post('http://localhost:5000/api/raw-materials', {
+      await axios.post('https://dailyupdates-3l0b.onrender.com/api/raw-materials', {
         name,
         price: parseFloat(price),
         inStock: parseInt(inStock, 10),
@@ -227,7 +227,7 @@ const RawMaterialsAdmin = () => {
   // Handle archive success: filter out exhausted items after archiving
   const handleArchiveSuccess = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/raw-materials');
+      const res = await axios.get('https://dailyupdates-3l0b.onrender.com/api/raw-materials');
       const data = Array.isArray(res.data) 
         ? res.data.filter(material => material.currentStock > 0) 
         : [];

@@ -30,7 +30,7 @@ const ProductionForm = () => {
   useEffect(() => {
     const fetchMaterials = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/raw-materials');
+        const res = await axios.get('https://dailyupdates-3l0b.onrender.com/api/raw-materials');
         setAvailableMaterials(res.data);
       } catch (error) {
         console.error('Error fetching raw materials:', error);
@@ -45,7 +45,7 @@ const ProductionForm = () => {
 
   const submitCakesProduction = async () => {
     try {
-      await axios.post('http://localhost:5000/api/production/cakes', {
+      await axios.post('https://dailyupdates-3l0b.onrender.com/api/production/cakes', {
         shift,
         production,
       });
@@ -60,7 +60,7 @@ const ProductionForm = () => {
   const submitRawMaterialsUsage = async () => {
     try {
       // Fetch stock availability
-      const stockCheck = await axios.get('http://localhost:5000/api/raw-materials');
+      const stockCheck = await axios.get('https://dailyupdates-3l0b.onrender.com/api/raw-materials');
       const stockData = stockCheck.data;
       const errors = [];
   
@@ -87,7 +87,7 @@ const ProductionForm = () => {
       }
   
       // Submit the raw materials usage
-      await axios.post('http://localhost:5000/api/production/materials', {
+      await axios.post('https://dailyupdates-3l0b.onrender.com/api/production/materials', {
         shift,
         rawMaterialsUsed,
       });

@@ -10,7 +10,7 @@ const DailySummary = () => {
   // Fetch daily summary
   const fetchSummary = useCallback(async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/production/summary/daily?date=${date}`);
+      const res = await axios.get(`https://dailyupdates-3l0b.onrender.com/api/production/summary/daily?date=${date}`);
       setSummary(res.data);
     } catch (error) {
       console.error('Error fetching daily summary:', error);
@@ -21,7 +21,7 @@ const DailySummary = () => {
   const fetchCumulativeData = useCallback(async () => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/production/summary/range?startDate=2000-01-01&endDate=${date}`
+        `https://dailyupdates-3l0b.onrender.com/api/production/summary/range?startDate=2000-01-01&endDate=${date}`
       );
       setCumulativeData(res.data);
     } catch (error) {
