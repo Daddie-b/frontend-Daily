@@ -50,19 +50,22 @@ function NavLink({ to, children }) {
 }
 
 function App() {
+  
   return (
     <Router>
       <div className="App">
-        <header>
-          <h1>Cake Production & Sales Tracker</h1>
-          <nav>
+      <header>
+      <h1>Cake Production & Sales Tracker</h1>
+        <nav>
+          <div className="nav-wrapper">
             <ul className="nav-links">
               <NavLink to="/">Production Entry</NavLink>
               <NavLink to="/raw-materials">Raw Materials Admin</NavLink>
               <NavLink to="/daily-summary">Daily Summary</NavLink>
             </ul>
-          </nav>
-        </header>
+          </div>
+        </nav>
+      </header>
         <main>
           <Routes>
             <Route path="/" element={<ProductionForm />} />

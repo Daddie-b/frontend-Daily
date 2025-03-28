@@ -361,3 +361,22 @@ button[type="button"] {
 .shift-box {
   animation: slideDown 0.5s ease;
 }
+
+/* In your App.css - modify the .nav-links section */
+.nav-links {
+  display: flex;
+  flex-direction: row; /* Explicitly set to row (default value) */
+  justify-content: center;
+  gap: 2rem;
+  list-style: none;
+}
+
+/* Update the mobile media query */
+@media (max-width: 768px) {
+  .nav-links {
+    flex-direction: row; /* Keep horizontal even on mobile */
+    flex-wrap: wrap; /* Allow items to wrap if needed */
+    gap: 1rem;
+  }
+}
+
